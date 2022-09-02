@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 2.8.6)
 project(brotli C)
 
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+option(BROTLI_BUILD_EXECUTABLE "Build the brotli executable" ON)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to Release as none was specified.")
@@ -200,20 +201,20 @@ if(BROTLI_PARENT_DIRECTORY)
   set(BROTLI_LIBRARIES "${BROTLI_LIBRARIES}" PARENT_SCOPE)
 endif()
 
+set(INSTALL_TARGETS ${BROTLI_LIBRARIES_CORE})
+
+if(BROTLI_BUILD_EXECUTABLE)
 # Build the brotli executable
 add_executable(brotli ${BROTLI_CLI_C})
 target_link_libraries(brotli ${BROTLI_LIBRARIES})
+list(APPEND INSTALL_TARGETS brotli)
+endif()
 
 # Installation
 if(NOT BROTLI_EMSCRIPTEN)
 if(NOT BROTLI_BUNDLED_MODE)
   install(
-    TARGETS brotli
-    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-  )
-
-  install(
-    TARGETS ${BROTLI_LIBRARIES_CORE}
+    TARGETS ${INSTALL_TARGETS}
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
