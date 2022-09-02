@@ -184,7 +184,9 @@ foreach(lib IN LISTS BROTLI_LIBRARIES_CORE)
   if(NOT BROTLI_EMSCRIPTEN)
     set_target_properties(${lib} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
   endif()
-  set_property(TARGET ${lib} APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${BROTLI_INCLUDE_DIRS}")
+  if(BROTLI_PARENT_DIRECTORY)
+    set_property(TARGET ${lib} APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${BROTLI_INCLUDE_DIRS}")
+  endif()
 endforeach()
 
 target_link_libraries(brotlidec brotlicommon)
@@ -213,11 +215,45 @@ endif()
 # Installation
 if(NOT BROTLI_EMSCRIPTEN)
 if(NOT BROTLI_BUNDLED_MODE)
+
+  set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+  set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+  set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
+  set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+  set(targets_export_name "${PROJECT_NAME}Targets")
+  set(namespace "${PROJECT_NAME}::")
+
+  include(CMakePackageConfigHelpers)
+
+  write_basic_package_version_file(
+    "${version_config}" VERSION "${BROTLI_VERSION}" COMPATIBILITY SameMajorVersion
+  )
+
+  configure_package_config_file(
+    "cmake/template/Config.cmake.in"
+    "${project_config}"
+    INSTALL_DESTINATION "${config_install_dir}"
+  )
+
+  install(
+    FILES "${project_config}" "${version_config}"
+    DESTINATION "${config_install_dir}"
+  )
+
+  install(
+    EXPORT ${targets_export_name}
+    DESTINATION ${config_install_dir}
+    NAMESPACE ${namespace}
+  )
+
   install(
     TARGETS ${INSTALL_TARGETS}
+    EXPORT ${targets_export_name}
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    FRAMEWORK DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
   )
 
   install(
