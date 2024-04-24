@@ -42,6 +42,8 @@ python/** !export-ignore
 scripts !export-ignore
 scripts/sources.lst !export-ignore
 scripts/libbrotli*.pc.in !export-ignore
+cmake !export-ignore
+cmake/** !export-ignore
 
 # Add testdata
 tests !export-ignore
